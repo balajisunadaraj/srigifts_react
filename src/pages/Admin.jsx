@@ -1002,6 +1002,7 @@ const S = {
     fontFamily: "'Outfit', sans-serif",
   },
   header: {
+    height: '130px',
     background: '#ffffff',
     borderBottom: '1px solid #e0e0e0',
     padding: '0.9rem 2rem',
@@ -1014,15 +1015,15 @@ const S = {
     boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
   },
   headerTitle: {
-    fontSize: '1.45rem',
+    fontSize: '1.5rem',
     fontWeight: '800',
     color: '#111',
-    margin: 0,
+    margin: 1,
     letterSpacing: '-0.02em',
   },
   headerActions: {
     display: 'flex',
-    gap: '0.65rem',
+    gap: '0.2rem',
     alignItems: 'center',
     flexWrap: 'wrap',
   },
