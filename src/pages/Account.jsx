@@ -147,6 +147,27 @@ const Account = () => {
     }
   };
 
+  const handleCancelOrder = async (orderId, orderObj) => {
+    if (!user) return;
+    const confirmCancel = window.confirm('Are you sure you want to cancel this order?');
+    if (!confirmCancel) return;
+    try {
+      await update(ref(db, `orders/${orderId}`), { ...orderObj, status: 'Cancelled' });
+      const notifId = `notif_${Date.now()}`;
+      const notifPayload = {
+        id: notifId,
+        title: 'Order Cancelled',
+        message: `Your order #${orderId} was cancelled by the admin.`,
+        date: new Date().toLocaleDateString()
+      };
+      await set(ref(db, `notifications/${user.uid}/${notifId}`), notifPayload);
+      setOrders(prev => prev.map(o => (o.id === orderId ? { ...o, status: 'Cancelled' } : o)));
+      setNotifications(prev => [...prev, notifPayload]);
+    } catch (err) {
+      alert('Failed to cancel order: ' + err.message);
+    }
+  };
+
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setSettingsMsg('');
@@ -168,6 +189,13 @@ const Account = () => {
       setSettingsMsg('❌ Failed: ' + err.message);
     }
   };
+
+  const renderFallback = () => (
+    <div style={{ padding: '2rem' }}>
+      <h2 style={styles.tabTitle}>Page Not Found</h2>
+      <p style={styles.emptyText}>The selected section is unavailable.</p>
+    </div>
+  );
 
   return (
     <div className="page-transition" style={styles.page}>
@@ -232,7 +260,6 @@ const Account = () => {
             </div>
           ) : (
             <>
-              {/* 1. Dashboard Tab */}
               {activeTab === 'dashboard' && (
                 <div>
                   <h2 style={styles.tabTitle}>Dashboard</h2>
@@ -300,7 +327,6 @@ const Account = () => {
                 </div>
               )}
 
-              {/* 2. Orders Tab */}
               {activeTab === 'orders' && (
                 <div>
                   <h2 style={styles.tabTitle}>My Orders</h2>
@@ -317,105 +343,31 @@ const Account = () => {
                             <th style={{ padding: '0.75rem' }}>UTR</th>
                             <th style={{ padding: '0.75rem' }}>Amount</th>
                             <th style={{ padding: '0.75rem' }}>Status</th>
-                            <th style={{ padding: '0.75rem', textAlign: 'center' }}>Invoice</th>
+                            <th style={{ padding: '0.75rem', textAlign: 'center' }}>Action</th>
                           </tr>
                         </thead>
                         <tbody>
                           {orders.map(o => (
                             <tr key={o.id} style={{ borderBottom: '1px solid #eee' }}>
                               <td style={{ padding: '0.75rem', fontWeight: 600 }}>{o.id}</td>
-                              <td style={{ padding: '0.75rem', fontSize: '0.8rem', color: '#666' }}>
-                                {new Date(o.createdAt || Date.now()).toLocaleDateString()}
-                              </td>
-                              <td style={{ padding: '0.75rem' }}>
-                                {o.productTitle} <span style={{ color: '#888' }}>×{o.quantity}</span>
-                              </td>
-                              <td style={{ padding: '0.75rem', fontFamily: 'monospace', fontSize: '0.8rem' }}>
-                                {o.paymentReference || '—'}
-                              </td>
+                              <td style={{ padding: '0.75rem', fontSize: '0.8rem', color: '#666' }}>{new Date(o.createdAt || Date.now()).toLocaleDateString()}</td>
+                              <td style={{ padding: '0.75rem' }}>{o.productTitle} <span style={{ color: '#888' }}>×{o.quantity}</span></td>
+                              <td style={{ padding: '0.75rem', fontFamily: 'monospace', fontSize: '0.8rem' }}>{o.paymentReference || '—'}</td>
                               <td style={{ padding: '0.75rem', fontWeight: 700 }}>₹{o.totalAmount}</td>
                               <td style={{ padding: '0.75rem' }}>
                                 <span style={{
                                   padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700,
                                   background: o.status === 'Delivered' ? '#e8f5e9' : '#fff8e1',
                                   color: o.status === 'Delivered' ? '#2e7d32' : '#f57c00'
-                                }}>
-                                  {o.status || 'Processing'}
-                                </span>
+                                }}>{o.status || 'Processing'}</span>
                               </td>
                               <td style={{ padding: '0.75rem', textAlign: 'center' }}>
-                                <button
-                                  onClick={() => {
-                                    const htmlContent = `
-                                      <html>
-                                      <head>
-                                        <title>SRI GIFTS Invoice - ${o.id}</title>
-                                        <style>
-                                          body { font-family: Arial, sans-serif; padding: 2rem; color: #333; }
-                                          .header { border-bottom: 2px solid #111; padding-bottom: 1rem; margin-bottom: 2rem; }
-                                          .invoice-details { display: flex; justify-content: space-between; margin-bottom: 2rem; }
-                                          table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-                                          th, td { border-bottom: 1px solid #ddd; padding: 0.75rem; text-align: left; }
-                                          th { background: #f9f9f9; }
-                                          .total { font-size: 1.2rem; font-weight: bold; text-align: right; margin-top: 2rem; }
-                                        </style>
-                                      </head>
-                                      <body>
-                                        <div class="header">
-                                          <h1>SRI GIFTS</h1>
-                                          <p>Invoice / Purchase Receipt</p>
-                                        </div>
-                                        <div class="invoice-details">
-                                          <div>
-                                            <strong>Order ID:</strong> ${o.id}<br>
-                                            <strong>Date:</strong> ${new Date(o.createdAt || Date.now()).toLocaleString()}<br>
-                                            <strong>Payment Reference (UTR):</strong> ${o.paymentReference || '—'}
-                                          </div>
-                                          <div>
-                                            <strong>Customer:</strong> ${o.customerName || 'Customer'}<br>
-                                            <strong>Contact:</strong> ${o.customerPhone || '—'}<br>
-                                            <strong>Delivery Address:</strong> ${o.customerAddress || '—'}, ${o.customerCity || ''} - ${o.customerPincode || ''}
-                                          </div>
-                                        </div>
-                                        <table>
-                                          <thead>
-                                            <tr>
-                                              <th>Product Details</th>
-                                              <th>Quantity</th>
-                                              <th>Price</th>
-                                              <th>Total</th>
-                                            </tr>
-                                          </thead>
-                                          <tbody>
-                                            <tr>
-                                              <td>${o.productTitle}</td>
-                                              <td>${o.quantity}</td>
-                                              <td>₹${(o.totalAmount / o.quantity).toFixed(2)}</td>
-                                              <td>₹${o.totalAmount}</td>
-                                            </tr>
-                                          </tbody>
-                                        </table>
-                                        <div class="total">Grand Total: ₹${o.totalAmount}</div>
-                                      </body>
-                                      </html>
-                                    `;
-                                    const blob = new Blob([htmlContent], { type: 'text/html' });
-                                    const url = URL.createObjectURL(blob);
-                                    const link = document.createElement('a');
-                                    link.href = url;
-                                    link.download = `invoice_${o.id}.html`;
-                                    document.body.appendChild(link);
-                                    link.click();
-                                    document.body.removeChild(link);
-                                    URL.revokeObjectURL(url);
-                                  }}
-                                  style={{
-                                    background: '#111', color: '#fff', border: 'none', borderRadius: '4px',
-                                    padding: '4px 10px', fontSize: '0.75rem', fontWeight: '600', cursor: 'pointer'
-                                  }}
-                                >
-                                  Download
-                                </button>
+                                {o.status !== 'Shipped' && o.status !== 'Delivered' && (
+                                  <button onClick={() => handleCancelOrder(o.id, o)}
+                                    style={{ background: 'none', border: '1px solid #e74c3c', color: '#e74c3c', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer' }}>
+                                    Cancel
+                                  </button>
+                                )}
                               </td>
                             </tr>
                           ))}
@@ -426,12 +378,9 @@ const Account = () => {
                 </div>
               )}
 
-              {/* 3. Addresses Tab */}
               {activeTab === 'addresses' && (
                 <div>
                   <h2 style={styles.tabTitle}>Saved Addresses</h2>
-                  
-                  {/* Address List */}
                   {addresses.length === 0 ? (
                     <p style={styles.emptyText}>No saved addresses found.</p>
                   ) : (
@@ -454,8 +403,6 @@ const Account = () => {
                       ))}
                     </div>
                   )}
-
-                  {/* Add New Address Form */}
                   <h3 style={styles.sectionHeading}>Add New Address</h3>
                   <form onSubmit={handleAddAddress} style={styles.form}>
                     <div style={styles.formRow}>
@@ -501,7 +448,6 @@ const Account = () => {
                 </div>
               )}
 
-              {/* 4. Notifications Tab */}
               {activeTab === 'notifications' && (
                 <div>
                   <h2 style={styles.tabTitle}>Notifications</h2>
@@ -521,7 +467,6 @@ const Account = () => {
                 </div>
               )}
 
-              {/* 5. Wishlist Tab */}
               {activeTab === 'wishlist' && (
                 <div>
                   <h2 style={styles.tabTitle}>My Wishlist</h2>
@@ -552,7 +497,6 @@ const Account = () => {
                 </div>
               )}
 
-              {/* 6. Settings Tab */}
               {activeTab === 'settings' && (
                 <div>
                   <h2 style={styles.tabTitle}>Settings</h2>
@@ -582,6 +526,14 @@ const Account = () => {
                   </form>
                 </div>
               )}
+              
+              {activeTab !== 'dashboard' && 
+               activeTab !== 'orders' && 
+               activeTab !== 'addresses' && 
+               activeTab !== 'notifications' && 
+               activeTab !== 'wishlist' && 
+               activeTab !== 'settings' && 
+               renderFallback()}
             </>
           )}
         </main>
