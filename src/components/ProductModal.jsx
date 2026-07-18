@@ -130,12 +130,13 @@ const ProductModal = ({ product, onClose }) => {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '1rem',
+                gap: '0.75rem',
                 marginTop: '1rem',
                 marginBottom: '1rem',
+                flexWrap: 'wrap',
               }}
             >
-              <label style={{ fontWeight: '600' }}>Quantity:</label>
+              <label style={{ fontWeight: '600', whiteSpace: 'nowrap' }}>Quantity:</label>
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 style={{

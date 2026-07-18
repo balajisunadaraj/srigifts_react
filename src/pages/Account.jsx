@@ -205,9 +205,9 @@ const Account = () => {
         <h1 style={styles.headerTitle}>Welcome, {user.name}</h1>
       </div>
 
-      <div style={styles.container}>
+      <div className="profile-layout-container">
         {/* Left Sidebar Menu */}
-        <aside style={styles.sidebar}>
+        <aside className="profile-sidebar">
           <button 
             onClick={() => setActiveTab('dashboard')} 
             style={{...styles.sidebarBtn, ...(activeTab === 'dashboard' ? styles.sidebarBtnActive : {})}}
@@ -253,7 +253,7 @@ const Account = () => {
         </aside>
 
         {/* Right Tab Content Card */}
-        <main style={styles.mainContent}>
+        <main className="profile-main" style={styles.mainContent}>
           {loading ? (
             <div style={{ padding: '3rem', textAlign: 'center', color: '#888' }}>
               <p>Loading your profile details...</p>
@@ -782,16 +782,39 @@ const styles = {
   },
 };
 
-// Add responsive sidebar CSS directly in head
+// Inject responsive CSS for the profile page layout
 if (!document.getElementById('profile-page-responsive-css')) {
   const css = document.createElement('style');
   css.id = 'profile-page-responsive-css';
   css.textContent = `
+    .profile-layout-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      gap: 2rem;
+      align-items: flex-start;
+    }
+    .profile-sidebar {
+      width: 240px;
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid #eaeaea;
+      padding: 0.75rem 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+      flex-shrink: 0;
+    }
+    .profile-main {
+      flex: 1;
+      min-width: 0;
+    }
     @media (max-width: 768px) {
-      div[style*="alignItems: flex-start"] {
+      .profile-layout-container {
         flex-direction: column !important;
       }
-      aside[style*="width: 240px"] {
+      .profile-sidebar {
+        width: 100% !important;
+      }
+      .profile-main {
         width: 100% !important;
       }
     }

@@ -754,8 +754,8 @@ const Admin = () => {
                           <div style={{ fontSize: '0.75rem', color: '#888' }}>{order.customerCity} {order.customerPincode}</div>
                         </td>
                         <td style={S.td}>
-                          <div style={{ fontSize: '0.82rem' }}>{order.productTitle}</div>
-                          <div style={{ fontSize: '0.75rem', color: '#888' }}>Qty: {order.quantity}</div>
+                          <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{order.productTitle}</div>
+                          <span style={{ fontSize: '0.75rem', color: '#888', marginLeft: '0.5rem' }}>Qty: {order.quantity}</span>
                         </td>
                         <td style={S.td}>
                           <span style={{ fontWeight: 700 }}>₹{order.totalAmount}</span>
