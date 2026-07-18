@@ -1,0 +1,18 @@
+export const CATEGORY_OPTIONS = [
+  { id: 1, name: 'Engraving gifts', image: '/engraving gifts.png' },
+  { id: 2, name: 'Photo Frames', image: '/Photo frames.png' },
+  { id: 3, name: 'Caricatures and Cutouts', image: '/Caricature .png' },
+  { id: 4, name: 'Customized Water bottle', image: '/Customized Water bottle.png' },
+  { id: 5, name: 'Customized gifts', image: '/Customized gifts.png' },
+  { id: 6, name: 'Wooden Engraving', image: '/Wooden Engraving.png' },
+  { id: 7, name: 'Lamp gifts', image: '/Lamp gifts.png' },
+  { id: 8, name: 'Gifts & Toys', image: '/Gifts & Toys.png' },
+  { id: 9, name: 'Customized clock', image: '/Customized clock.png' },
+  { id: 10, name: 'Home Decors', image: '/home decor.png' },
+  { id: 11, name: 'Acrylic frame', image: '/Acrylic frame.png' },
+  { id: 12, name: 'Keychains', image: '/Keychains.png' },
+  { id: 13, name: 'Couples gifts', image: '/Couples gifts.png' },
+  { id: 14, name: 'Mobile customize cover', image: '/Mobile customize cover.png' },
+  { id: 15, name: 'Return Gifts', image: '/return gifts.png' },
+  { id: 16, name: 'Wallet engraving & Sketch', image: '/Wallet engraving & Sketch.png' },
+];
