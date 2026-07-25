@@ -367,14 +367,63 @@ p {
 }
 
 .category-products-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 1rem;
-    padding: 0.5rem 0 1rem;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 1.25rem;
+    padding: 0.5rem 0.25rem 1.25rem;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Custom Horizontal Scrollbar for category products row */
+.category-products-row::-webkit-scrollbar {
+    height: 8px;
+}
+
+.category-products-row::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+}
+
+.category-products-row::-webkit-scrollbar-thumb {
+    background: var(--primary-color, #e84393);
+    border-radius: 4px;
+}
+
+.category-products-row::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-color, #d63031);
 }
 
 .category-products-row > .product-card {
-    width: 100%;
+    flex: 0 0 260px;
+    width: 260px;
+    min-width: 260px;
+}
+
+.category-scroll-btn {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    color: var(--primary-color, #333);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    transition: all 0.2s ease;
+}
+
+.category-scroll-btn:hover {
+    background: var(--primary-color, #e84393);
+    color: #fff;
+    border-color: var(--primary-color, #e84393);
+    transform: translateY(-1px);
 }
 
 .product-title {

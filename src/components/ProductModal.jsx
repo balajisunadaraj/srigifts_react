@@ -53,7 +53,7 @@ const ProductModal = ({ product, onClose }) => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        overflowY: 'scroll',
+        overflowY: 'auto',
         zIndex: 99999,
         padding: '1rem',
       }}
@@ -62,7 +62,7 @@ const ProductModal = ({ product, onClose }) => {
         className="modal-content"
         style={{
           maxHeight: '70vh',
-          overflowY: 'scroll',
+          overflowY: 'auto',
           padding: '2rem',
           maxWidth: '900px',
           width: '95%',

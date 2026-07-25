@@ -12,6 +12,57 @@ import {
   fetchSupabaseProductById,
 } from '../services/productsService';
 
+const CategorySection = ({ categoryName, products, handleProductClick }) => {
+  const rowRef = React.useRef(null);
+
+  const handleScroll = (direction) => {
+    if (rowRef.current) {
+      const scrollAmount = direction === 'left' ? -320 : 320;
+      rowRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  return (
+    <section className="category-group" style={{ marginBottom: '2.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <h3 style={{ fontSize: '1.35rem', margin: 0, color: 'var(--primary-color)' }}>
+          {categoryName} <span style={{ fontSize: '0.9rem', color: '#666', fontWeight: 'normal' }}>({products.length})</span>
+        </h3>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button 
+            type="button"
+            className="category-scroll-btn" 
+            onClick={() => handleScroll('left')}
+            title="Scroll Left"
+            aria-label="Scroll Left"
+          >
+            &#10094;
+          </button>
+          <button 
+            type="button"
+            className="category-scroll-btn" 
+            onClick={() => handleScroll('right')}
+            title="Scroll Right"
+            aria-label="Scroll Right"
+          >
+            &#10095;
+          </button>
+        </div>
+      </div>
+      <div className="category-products-row" ref={rowRef}>
+        {products.map((product) => (
+          <ProductCard
+            key={product.id}
+            product={product}
+            compact={false}
+            onClick={(event) => handleProductClick(event, product)}
+          />
+        ))}
+      </div>
+    </section>
+  );
+};
+
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialCategory = searchParams.get('category') || 'All';
@@ -250,21 +301,12 @@ const Products = () => {
         ) : (
           <div className="category-groups" style={{ width: '100%', marginTop: '1rem' }}>
             {groupedCategories.map((categoryName) => (
-              <section key={categoryName} className="category-group" style={{ marginBottom: '2rem' }}>
-                <h3 style={{ fontSize: '1.35rem', marginBottom: '1rem', color: 'var(--primary-color)' }}>
-                  {categoryName}
-                </h3>
-                <div className="category-products-row">
-                  {groupedProducts[categoryName].map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      compact={false}
-                      onClick={(event) => handleProductClick(event, product)}
-                    />
-                  ))}
-                </div>
-              </section>
+              <CategorySection
+                key={categoryName}
+                categoryName={categoryName}
+                products={groupedProducts[categoryName]}
+                handleProductClick={handleProductClick}
+              />
             ))}
           </div>
         )}
