@@ -5,7 +5,6 @@ import { ref, get } from 'firebase/database';
 
 // ─────────────────────────────────────────────────────────────
 // AdminLogin — authenticates admins via Firebase Realtime DB.
-// Does NOT use Firebase Authentication or Supabase.
 // Session stored in localStorage under 'sri_admin_session'.
 // Customer login (sri_user) is completely unaffected.
 // Theme: clean white, matching the Admin Dashboard UI.

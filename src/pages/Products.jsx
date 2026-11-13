@@ -7,9 +7,6 @@ import {
   fetchFirebaseCategories,
   fetchFirebaseProducts,
   fetchFirebaseProductById,
-  fetchSupabaseCategories,
-  fetchSupabaseProducts,
-  fetchSupabaseProductById,
 } from '../services/productsService';
 
 const CategorySection = ({ categoryName, products, handleProductClick }) => {
@@ -82,46 +79,35 @@ const Products = () => {
       setLoading(true);
       setError('');
 
-      let productData = [];
-      let categoryNames = [];
-
       try {
         const [firebaseProducts, firebaseCategories] = await Promise.all([
           fetchFirebaseProducts(),
           fetchFirebaseCategories(),
         ]);
 
-        if (firebaseProducts.length > 0) {
-          productData = firebaseProducts;
-          categoryNames = firebaseCategories.map((c) => c.name).filter(Boolean);
-        } else {
-          throw new Error('No products found in Firebase.');
-        }
-      } catch (firebaseError) {
-        console.warn('Firebase fetch failed, falling back to Supabase:', firebaseError);
-
-        try {
-          const [supabaseProducts, supabaseCategories] = await Promise.all([
-            fetchSupabaseProducts(),
-            fetchSupabaseCategories(),
-          ]);
-
-          productData = supabaseProducts;
-          categoryNames = supabaseCategories.map((c) => c.name).filter(Boolean);
-        } catch (supabaseError) {
-          console.error('Supabase fallback also failed:', supabaseError);
-          setError('Unable to load products at this time. Please check your connection and try again.');
-          setLoading(false);
+        if (firebaseProducts.length === 0) {
+          setError('No products found in Firebase.');
+          setProducts([]);
+          setCategories(['All']);
           return;
         }
+
+        const productData = firebaseProducts;
+        const categoryNames = firebaseCategories.map((c) => c.name).filter(Boolean);
+
+        setProducts(productData);
+
+        const catsFromProducts = [...new Set(productData.map((p) => p.category))].filter(Boolean);
+        const uniqueCats = ['All', ...new Set([...CATEGORY_OPTIONS.map((c) => c.name), ...categoryNames, ...catsFromProducts])];
+        setCategories(uniqueCats);
+      } catch (firebaseError) {
+        console.error('Firebase fetch failed:', firebaseError);
+        setError('Unable to load products at this time. Please check your connection and try again.');
+        setProducts([]);
+        setCategories(['All']);
+      } finally {
+        setLoading(false);
       }
-
-      setProducts(productData);
-
-      const catsFromProducts = [...new Set(productData.map((p) => p.category))].filter(Boolean);
-      const uniqueCats = ['All', ...new Set([...CATEGORY_OPTIONS.map((c) => c.name), ...categoryNames, ...catsFromProducts])];
-      setCategories(uniqueCats);
-      setLoading(false);
     };
 
     fetchData();
@@ -171,8 +157,7 @@ const Products = () => {
 
   const handleProductClick = async (event, product) => {
     if (!product) return;
-    
-    // Capture click coordinates
+
     const rect = event.currentTarget.getBoundingClientRect();
     setModalPosition({
       x: rect.left,
@@ -180,25 +165,16 @@ const Products = () => {
     });
 
     setLoadingProduct(true);
-    // Try Firebase first
-    let full = null;
+
     try {
-      full = await fetchFirebaseProductById(product.id);
+      const full = await fetchFirebaseProductById(product.id);
+      setSelectedProduct(full || product);
     } catch (e) {
       console.warn('Firebase detail fetch failed', e);
+      setSelectedProduct(product);
+    } finally {
+      setLoadingProduct(false);
     }
-
-    if (!full) {
-      try {
-        full = await fetchSupabaseProductById(product.id);
-      } catch (e) {
-        console.warn('Supabase detail fetch failed', e);
-      }
-    }
-
-    // If still no full, fall back to the passed product object
-    setSelectedProduct(full || product);
-    setLoadingProduct(false);
   };
 
   return (

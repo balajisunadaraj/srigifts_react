@@ -1,4 +1,3 @@
-import { supabase } from '../supabase';
 import { db } from '../firebase';
 import { ref, get, set } from 'firebase/database';
 
@@ -59,29 +58,6 @@ const writeRowsToFirebase = async (path, rows) => {
   }
 };
 
-export const fetchSupabaseProducts = async () => {
-  const { data, error } = await withTimeout(
-    supabase.from('products').select('*').order('id', { ascending: false })
-  );
-
-  if (error) {
-    throw error;
-  }
-
-  return (data || []).map(normalizeProduct);
-};
-
-export const fetchSupabaseCategories = async () => {
-  const { data, error } = await withTimeout(
-    supabase.from('categories').select('name, image, id')
-  );
-
-  if (error) {
-    throw error;
-  }
-
-  return (data || []).map(normalizeCategory);
-};
 
 export const fetchFirebaseProducts = async () => {
   const snapshot = await get(ref(db, 'products'));
@@ -106,60 +82,4 @@ export const fetchFirebaseCategories = async () => {
   return Object.values(value).map(normalizeCategory);
 };
 
-export const fetchSupabaseProductById = async (id) => {
-  if (!id) return null;
-  const { data, error } = await withTimeout(
-    supabase.from('products').select('*').eq('id', id).single()
-  );
-  if (error) return null;
-  return normalizeProduct(data || {});
-};
 
-export const syncSupabaseProductsToFirebase = async () => {
-  const products = await fetchSupabaseProducts();
-  const productsMap = toFirebaseMap(products, 'id');
-  await set(ref(db, 'products'), productsMap);
-  return products;
-};
-
-export const syncSupabaseCategoriesToFirebase = async () => {
-  const categories = await fetchSupabaseCategories();
-  const categoriesMap = toFirebaseMap(categories, 'id');
-  await set(ref(db, 'categories'), categoriesMap);
-  return categories;
-};
-
-export const syncSupabaseTablesToFirebase = async () => {
-  const tableConfigs = [
-    { table: 'products', path: 'products', normalize: normalizeProduct },
-    { table: 'categories', path: 'categories', normalize: normalizeCategory },
-    { table: 'offers', path: 'offers', normalize: normalizeRecord },
-    { table: 'orders', path: 'orders', normalize: normalizeRecord },
-    { table: 'users', path: 'users', normalize: normalizeRecord },
-    { table: 'wishlist', path: 'wishlist', normalize: normalizeRecord },
-    { table: 'reviews', path: 'reviews', normalize: normalizeRecord },
-  ];
-
-  const results = [];
-
-  for (const { table, path, normalize } of tableConfigs) {
-    const { data, error } = await withTimeout(supabase.from(table).select('*'));
-
-    if (error) {
-      results.push({ table, path, count: 0, error });
-      continue;
-    }
-
-    const normalizedRows = (data || []).map(normalize || normalizeRecord);
-    await writeRowsToFirebase(path, normalizedRows);
-    results.push({ table, path, count: normalizedRows.length });
-  }
-
-  return results;
-};
-
-export const syncSupabaseProductsAndCategoriesToFirebase = async () => {
-  const products = await syncSupabaseProductsToFirebase();
-  const categories = await syncSupabaseCategoriesToFirebase();
-  return { products, categories };
-};

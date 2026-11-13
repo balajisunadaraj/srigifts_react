@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { ref, onValue, off } from 'firebase/database';
-import { supabase } from '../supabase'; // Fallback if not using RTDB fully yet
 
 const TrackOrder = () => {
   const [orderId, setOrderId] = useState('');
@@ -29,7 +28,6 @@ const TrackOrder = () => {
     setLoading(true);
     setOrderStatus(null);
 
-    // 1. Setup Firebase Realtime Database Listener for instant updates
     const orderRef = ref(db, `orders/${orderId.trim()}`);
     onValue(orderRef, (snapshot) => {
       const data = snapshot.val();
@@ -37,33 +35,14 @@ const TrackOrder = () => {
         setOrderStatus(data);
         setLoading(false);
       } else {
-        // Fallback to Supabase if not found in RTDB (for old orders)
-        fetchFromSupabase(orderId.trim());
+        setError('Order not found. Please check the ID and try again.');
+        setLoading(false);
       }
     }, (err) => {
-      console.error("Firebase tracking error:", err);
-      fetchFromSupabase(orderId.trim());
-    });
-  };
-
-  const fetchFromSupabase = async (id) => {
-    try {
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('orderId', id)
-        .single();
-        
-      if (error || !data) {
-        setError("Order not found. Please check the ID and try again.");
-      } else {
-        setOrderStatus(data);
-      }
-    } catch (err) {
-      setError("Failed to track order. Please try again later.");
-    } finally {
+      console.error('Firebase tracking error:', err);
+      setError('Failed to track order. Please try again later.');
       setLoading(false);
-    }
+    });
   };
 
   return (
